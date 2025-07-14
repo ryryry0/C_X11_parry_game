@@ -573,6 +573,10 @@ double big2 = 1.1;
 double big3 = 1.1;
 int hit = 0; // teki
 int hit1 = 0;
+int hp;       // UIのHP
+int see = 0;  // 経過フレーム数
+int see2 = 0; // 特定経過フレーム数、ビーム用
+int d = 0;    // ビームフラグ、１の時発射、０の時発射しない
 
 // ウインドウの定義
 int x_max = 800;
@@ -598,6 +602,7 @@ float eehp = 50; // hpバー用
 struct ball balls[NUM_BALL];
 
 // main
+// 各種定義,スレッド立ち上げ,プレイヤー制御
 int main()
 {
 
@@ -802,10 +807,10 @@ int main()
 void draw_ramiel_yaxis(int cx, int cy, int frame)
 {
     double angle = frame * -0.03;                     // 回転角（ラジアン）
-    double float_offset = 30 /** sin(frame * 0.02)*/; // 上下にふわふわ浮く
+    double float_offset = 30 /** sin(frame * 0.02)*/; // 上下にふわふわ浮く//使ってない、やめた
     double size = 50;                                 // 全体サイズ
 
-    // 頂点データ（X, Y, Z）
+    // ラミエルの頂点データ（X, Y, Z）
     double vertices[6][3] = {
         {0, -size, 0},     // 0: 上頂点
         {-size, 0, -size}, // 1
@@ -912,39 +917,40 @@ void draw_ramiel_yaxis(int cx, int cy, int frame)
 }
 
 // 描画スレッド
-int hp;
-int see = 0;
-int dragon1_timer = 0;    // 残り表示時間（フレーム単位）
-int dragon1_interval = 0; // 再出現までのカウントダウン（フレーム単位）
-int see2 = 0;
-int d = 0;
 void *draw_thread(void *arg)
 {
-
-    while (game_running)
+    while (game_running) // game_running==1なら真
     {
         // この変数をいじっている間は他のスレッドは待っててね！の意味らしい
-        // 他のスレッドが同時アクセスすると怖いので導入した
+        // 他のスレッドが同時アクセスすると怖いので導入した、鍵みたいなもの
         pthread_mutex_lock(&draw_mutex);
 
         g_clear();
         draw_ximage(disp, get_draw_target(), gc, img_back3, 400, 200);
-        g_rgb(0, 20000, 30000); 
+        g_rgb(0, 20000, 30000);
         g_fill(0, 400, 800, 400);
 
-        // ブラックホール
+        // 背景変化---------------------------------------------------------------------------------------------
+        // 楕円の半径を変化させていく
         double r = 1 + big;
         double r2 = 1 + big2;
         double r3 = 1000 - big3;
 
-        double t = 2;
-        double tt = 1;
+        // 縦横比
+        double t = 2;  // 横
+        double tt = 1; // 縦
+
+        // 大きくなりすぎないように、指数関数的に増加させていく
         if (big <= 1000)
             big *= 1.003;
         if (big2 <= 1000 && big >= 1000)
             big2 *= 1.003;
         if (big3 <= 1000 && big2 >= 1000 && big >= 1000)
             big3 *= 1.01;
+
+        // 楕円同士被らないように制御
+        // 通常背景ー黒ー白ー通常背景の順に変わっていく
+        // 違和感がないように上下て色を若干変えている
         g_rgb(0, 0, 0);
         if (big2 <= 1000)
         {
@@ -971,13 +977,13 @@ void *draw_thread(void *arg)
         // 敵描画-------------------------------------------------------------------------------------------------------
         see++;
         draw_ramiel_yaxis(400, 350, see);
-        // HPバー
+        // 敵のHPバー
         int ehp_x = 400 - 40; // 400-40//400-180
         int ehp_y = 315;      // 315//35
         int ehp_w = 80;       // 80//360
         int ehp_h = 12;       // 10//15
 
-        int pre_ehp = eehp;
+        // 敵のHPバー用
         eehp = (ehp_w - 8) * (e_hp / 50.0);
 
         // 黒
@@ -987,17 +993,13 @@ void *draw_thread(void *arg)
         // 白
         g_rgb(50000, 50000, 50000);
         g_fill(ehp_x + 2, ehp_y + 2, ehp_w - 4, ehp_h - 4);
-        g_rgb(0, 50000, 0); 
-        if (pre_ehp != e_hp)
-        {
-            g_rgb(60000, 0, 0);
-        }
+
+        //立体感のため、上半分と下半分で色を変える
+        //上のいろ
+        g_rgb(60000, 0, 0);
         g_fill(ehp_x + 4, ehp_y + 4, eehp, (ehp_h - 8) / 2.0);
-        g_rgb(0, 43000, 0);
-        if (pre_ehp != e_hp)
-        {
-            g_rgb(53000, 0, 0);
-        }
+        //下の色
+        g_rgb(53000, 0, 0);
         g_fill(ehp_x + 4, ehp_y + 4 + (ehp_h - 8) / 2.0, eehp, (ehp_h - 8) / 2.0);
 
         // 目盛り
@@ -1011,10 +1013,6 @@ void *draw_thread(void *arg)
         //-------------------------------------------------------------------------------------------------------
 
         // --- 床線描画（擬似3D床） ---
-        // g_rgb(45535, 45535, 45535); 
-        g_rgb(0, 30000, 30000); 
-
-        // --- 床線描画（擬似3D床） ---
         g_rgb(0, 30000, 30000); // 線の色
 
         int z;
@@ -1022,9 +1020,9 @@ void *draw_thread(void *arg)
         {
             float z_scroll = (float)((int)(z - bg_floor_scroll + 800) % 800);
 
-            // ★ 非線形なスケール調整：powで遠近感を強調
+            // 非線形なスケール調整：powで遠近感を強調
             float linear = (800.0f - z_scroll) / 800.0f; // 0（奥）～1（手前）まで
-            float scale = powf(linear, 4.0f);            // 2.0以上なら奥がギュッと狭まる
+            float scale = powf(linear, 4.0f);            // 奥がギュッと狭まる
 
             float py = 400.0f + (800.0f - z_scroll) * scale;
 
@@ -1045,16 +1043,16 @@ void *draw_thread(void *arg)
             float dx = xa - 400.0f;
             g_line(400, 400, xa, 800); // 中心から放射状に（縦線風）
         }
+        //大量の線を書くと重くなるので、水平線近くはベタ塗り
         g_fill(0, 400, 300, 10);
         g_fill(500, 400, 300, 10);
+        g_line(0, 400, 800, 400);//水平線
 
-        g_line(0, 400, 800, 400);
-
-        // score
+        // scoreログ
         sprintf(score_str, "Score: %d", main_player.player_score);
         text(10, 10, score_str);
 
-        // 時間を描画
+        // 時間ログ
         time_t now = time(NULL);
         remaining_time = game_time - (int)(now - start_time); // 経過時間から逆算
         if (remaining_time < 0)
@@ -1063,7 +1061,7 @@ void *draw_thread(void *arg)
         }
         char timer_str[20];
         sprintf(timer_str, "Time: %d", remaining_time);
-        text(80, 10, timer_str); // 画面右上あたりに表示
+        text(80, 10, timer_str); 
 
         // 火球描画
         int i;
@@ -1156,7 +1154,7 @@ void *draw_thread(void *arg)
         g_rgb(30000, 30000, 30000);
         g_fill(main_player.player_x - main_player.player_shield_width / 2 + 5, main_player.player_y - original_player_shield_height / 2 + 5, 25, 25);
         g_fill(main_player.player_x + main_player.player_shield_width / 2 - 5 - 25, main_player.player_y - original_player_shield_height / 2 + 5, 25, 25);
-        g_rgb(60000, 30000, 0); 
+        g_rgb(60000, 30000, 0);
         g_fill(main_player.player_x - main_player.player_shield_width / 2 + 10, main_player.player_y - original_player_shield_height / 2 + 3 + 10, 15, 10);
         g_fill(main_player.player_x + main_player.player_shield_width / 2 - 10 - 15, main_player.player_y - original_player_shield_height / 2 + 3 + 10, 15, 10);
         if (main_player.wide_mode == 1)
@@ -1185,7 +1183,7 @@ void *draw_thread(void *arg)
         g_text_font(625 - 560, 755 - 700, score_str, 24); // 10,13,16,20,24,32,48
 
         // 燃料バー
-        g_rgb(60000, 60000, 60000);                  
+        g_rgb(60000, 60000, 60000);
         g_text_font(12 + 400, 58 + 696, "FUEL", 24); // 10,13,16,20,24,32,48
         int f_x = 65 + 400;
         int f_y = 20 + 696;
@@ -1193,21 +1191,21 @@ void *draw_thread(void *arg)
         int f_h = 60;
         int fuel = (f_w - 20) * ((float)remaining_time / (float)game_time);
 
-        g_rgb(0, 0, 0); 
+        g_rgb(0, 0, 0);
         g_fill(f_x, f_y, f_w, f_h);
 
         g_rgb(50000, 50000, 50000);
         g_fill(f_x + 5, f_y + 5, f_w - 10, f_h - 10);
-        g_rgb(60000, 30000, 0); 
+        g_rgb(60000, 30000, 0);
         g_fill(f_x + 10, f_y + 10, fuel, (f_h - 20) / 2);
-        g_rgb(53000, 23000, 0); 
+        g_rgb(53000, 23000, 0);
         g_fill(f_x + 10, f_y + 10 + (f_h - 20) / 2, fuel, (f_h - 20) / 2);
 
         g_rgb(0, 0, 0);
         int k;
         for (k = 1; k <= 7; k++)
         {
-            g_rgb(0, 0, 0); 
+            g_rgb(0, 0, 0);
             g_line(f_x + 10 + (f_w - 20) / 8 * k, f_y + 10, f_x + 10 + (f_w - 20) / 8 * k, f_y + 10 + f_h - 20);
         }
 
@@ -1227,7 +1225,7 @@ void *draw_thread(void *arg)
         g_fill(hp_x, hp_y, hp_w, hp_h);
 
         // 緑の部分
-        g_rgb(50000, 50000, 50000); 
+        g_rgb(50000, 50000, 50000);
         g_fill(hp_x + 5, hp_y + 5, hp_w - 10, hp_h - 10);
         g_rgb(0, 50000, 0);
 
@@ -1243,27 +1241,27 @@ void *draw_thread(void *arg)
         g_fill(hp_x + 10, hp_y + 10 + (hp_h - 20) / 2, hp, (hp_h - 20) / 2);
 
         // 目盛り
-        g_rgb(0, 0, 0); 
+        g_rgb(0, 0, 0);
         for (k = 1; k <= 7; k++)
         {
-            g_rgb(0, 0, 0); 
+            g_rgb(0, 0, 0);
             g_line(hp_x + 10 + (hp_w - 20) / 8 * k, hp_y + 10, hp_x + 10 + (hp_w - 20) / 8 * k, hp_y + 10 + hp_h - 20);
         }
 
         // MPバー
         int mp = (hp_w - 20) * (main_player.player_mp / 1000.0);
-        g_rgb(0, 0, 0); 
+        g_rgb(0, 0, 0);
         g_fill(hp_x, hp_y2, hp_w, hp_h);
 
-        g_rgb(50000, 50000, 50000); 
+        g_rgb(50000, 50000, 50000);
         g_fill(hp_x + 5, hp_y2 + 5, hp_w - 10, hp_h - 10);
 
-        g_rgb(50000, 0, 50000); 
+        g_rgb(50000, 0, 50000);
         g_fill(hp_x + 10, hp_y2 + 10, mp, (hp_h - 20) / 2);
-        g_rgb(43000, 0, 43000); 
+        g_rgb(43000, 0, 43000);
         g_fill(hp_x + 10, hp_y2 + 10 + (hp_h - 20) / 2, mp, (hp_h - 20) / 2);
 
-        g_rgb(0, 0, 0); 
+        g_rgb(0, 0, 0);
         for (k = 1; k <= 7; k++)
         {
             g_rgb(0, 0, 0);
@@ -1455,7 +1453,6 @@ void *logic(void *arg)
                 pthread_t t;
                 pthread_create(&t, NULL, hit_hit_hit, NULL);
                 pthread_detach(t);
-                printf("[DEBUG] HP減少: %d\n", main_player.player_HP); // ← 追加
                 if (main_player.player_HP < 0)
                 {
                     main_player.player_HP = 0;
@@ -1633,7 +1630,7 @@ void show_start_screen()
     g_rgb(30000, 30000, 30000);
     g_fill(main_player.player_x - main_player.player_shield_width / 2 + 5, main_player.player_y - original_player_shield_height / 2 + 5, 25, 25);
     g_fill(main_player.player_x + main_player.player_shield_width / 2 - 5 - 25, main_player.player_y - original_player_shield_height / 2 + 5, 25, 25);
-    g_rgb(60000, 30000, 0); 
+    g_rgb(60000, 30000, 0);
     g_fill(main_player.player_x - main_player.player_shield_width / 2 + 10, main_player.player_y - original_player_shield_height / 2 + 3 + 10, 15, 10);
     g_fill(main_player.player_x + main_player.player_shield_width / 2 - 10 - 15, main_player.player_y - original_player_shield_height / 2 + 3 + 10, 15, 10);
     // プレイヤーかげ
@@ -1659,7 +1656,7 @@ void show_start_screen()
 
     int fuel = (f_w - 20) * ((float)game_time / (float)game_time);
 
-    g_rgb(0, 0, 0); 
+    g_rgb(0, 0, 0);
     g_fill(f_x, f_y, f_w, f_h);
 
     g_rgb(50000, 50000, 50000);
@@ -1708,7 +1705,7 @@ void show_start_screen()
 
     // MPバー
     int mp = (hp_w - 20) * (main_player.player_mp / 1000.0);
-    g_rgb(0, 0, 0); 
+    g_rgb(0, 0, 0);
     g_fill(hp_x, hp_y2, hp_w, hp_h);
 
     g_rgb(50000, 50000, 50000);
