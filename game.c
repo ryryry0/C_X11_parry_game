@@ -929,7 +929,7 @@ void *draw_thread(void *arg)
 
         g_clear();
         draw_ximage(disp, get_draw_target(), gc, img_back3, 400, 200);
-        g_rgb(0, 20000, 30000); // グレー
+        g_rgb(0, 20000, 30000); 
         g_fill(0, 400, 800, 400);
 
         // ブラックホール
@@ -981,19 +981,19 @@ void *draw_thread(void *arg)
         eehp = (ehp_w - 8) * (e_hp / 50.0);
 
         // 黒
-        g_rgb(0, 0, 0); // グレー
+        g_rgb(0, 0, 0);
         g_fill(ehp_x, ehp_y, ehp_w, ehp_h);
 
         // 白
-        g_rgb(50000, 50000, 50000); // グレー
+        g_rgb(50000, 50000, 50000);
         g_fill(ehp_x + 2, ehp_y + 2, ehp_w - 4, ehp_h - 4);
-        g_rgb(0, 50000, 0); // グレー
+        g_rgb(0, 50000, 0); 
         if (pre_ehp != e_hp)
         {
             g_rgb(60000, 0, 0);
         }
         g_fill(ehp_x + 4, ehp_y + 4, eehp, (ehp_h - 8) / 2.0);
-        g_rgb(0, 43000, 0); // グレー
+        g_rgb(0, 43000, 0);
         if (pre_ehp != e_hp)
         {
             g_rgb(53000, 0, 0);
@@ -1001,18 +1001,18 @@ void *draw_thread(void *arg)
         g_fill(ehp_x + 4, ehp_y + 4 + (ehp_h - 8) / 2.0, eehp, (ehp_h - 8) / 2.0);
 
         // 目盛り
-        g_rgb(0, 0, 0); // グレー
+        g_rgb(0, 0, 0);
         int k1;
         for (k1 = 1; k1 <= 7; k1++)
         {
-            g_rgb(0, 0, 0); // グレー
+            g_rgb(0, 0, 0);
             g_line(ehp_x + 4 + (ehp_w - 8) / 8 * k1, ehp_y + 4, ehp_x + 4 + (ehp_w - 8) / 8 * k1, ehp_y + 4 + ehp_h - 8);
         }; // 中心位置 (400,300), フレーム変数 see
         //-------------------------------------------------------------------------------------------------------
 
         // --- 床線描画（擬似3D床） ---
-        // g_rgb(45535, 45535, 45535); // グレー
-        g_rgb(0, 30000, 30000); // グレー
+        // g_rgb(45535, 45535, 45535); 
+        g_rgb(0, 30000, 30000); 
 
         // --- 床線描画（擬似3D床） ---
         g_rgb(0, 30000, 30000); // 線の色
@@ -1128,12 +1128,11 @@ void *draw_thread(void *arg)
                 g_rgb(r, g, b);
 
                 g_fill_arc((int)(px - size / 2), (int)(py - size / 2), size, size, 0, 360 * 64);
-                // g_line(400,400,px,py);
 
                 // かげ
                 float s_px = 400.0f + (x - 400.0f) * scale;
                 float s_py = 400.0f + (800.0f - 400.0f) * scale;
-                g_rgb(0, 18000, 28000); // グレー
+                g_rgb(0, 18000, 28000);
                 g_fill_arc((int)(s_px - size / 2), (int)(s_py - (size / 2) / 2), size, size / 2, 0, 360 * 64);
 
                 //--- 擬似3D変換おわり ---
@@ -1157,7 +1156,7 @@ void *draw_thread(void *arg)
         g_rgb(30000, 30000, 30000);
         g_fill(main_player.player_x - main_player.player_shield_width / 2 + 5, main_player.player_y - original_player_shield_height / 2 + 5, 25, 25);
         g_fill(main_player.player_x + main_player.player_shield_width / 2 - 5 - 25, main_player.player_y - original_player_shield_height / 2 + 5, 25, 25);
-        g_rgb(60000, 30000, 0); // グレー
+        g_rgb(60000, 30000, 0); 
         g_fill(main_player.player_x - main_player.player_shield_width / 2 + 10, main_player.player_y - original_player_shield_height / 2 + 3 + 10, 15, 10);
         g_fill(main_player.player_x + main_player.player_shield_width / 2 - 10 - 15, main_player.player_y - original_player_shield_height / 2 + 3 + 10, 15, 10);
         if (main_player.wide_mode == 1)
@@ -1171,7 +1170,7 @@ void *draw_thread(void *arg)
             g_fill(main_player.player_x - main_player.player_shield_width / 4, main_player.player_y - original_player_shield_height / 4, main_player.player_shield_width / 2, original_player_shield_height / 2);
         }
         // プレイヤーかげ
-        g_rgb(0, 18000, 28000); // グレー
+        g_rgb(0, 18000, 28000);
         g_fill(main_player.player_x - main_player.player_shield_width / 2, 700 - original_player_shield_height / 2, main_player.player_shield_width, original_player_shield_height);
 
         // UI
@@ -1186,7 +1185,7 @@ void *draw_thread(void *arg)
         g_text_font(625 - 560, 755 - 700, score_str, 24); // 10,13,16,20,24,32,48
 
         // 燃料バー
-        g_rgb(60000, 60000, 60000);                  // グレー
+        g_rgb(60000, 60000, 60000);                  
         g_text_font(12 + 400, 58 + 696, "FUEL", 24); // 10,13,16,20,24,32,48
         int f_x = 65 + 400;
         int f_y = 20 + 696;
@@ -1194,26 +1193,26 @@ void *draw_thread(void *arg)
         int f_h = 60;
         int fuel = (f_w - 20) * ((float)remaining_time / (float)game_time);
 
-        g_rgb(0, 0, 0); // グレー
+        g_rgb(0, 0, 0); 
         g_fill(f_x, f_y, f_w, f_h);
 
-        g_rgb(50000, 50000, 50000); // グレー
+        g_rgb(50000, 50000, 50000);
         g_fill(f_x + 5, f_y + 5, f_w - 10, f_h - 10);
-        g_rgb(60000, 30000, 0); // グレー
+        g_rgb(60000, 30000, 0); 
         g_fill(f_x + 10, f_y + 10, fuel, (f_h - 20) / 2);
-        g_rgb(53000, 23000, 0); // グレー
+        g_rgb(53000, 23000, 0); 
         g_fill(f_x + 10, f_y + 10 + (f_h - 20) / 2, fuel, (f_h - 20) / 2);
 
-        g_rgb(0, 0, 0); // グレー
+        g_rgb(0, 0, 0);
         int k;
         for (k = 1; k <= 7; k++)
         {
-            g_rgb(0, 0, 0); // グレー
+            g_rgb(0, 0, 0); 
             g_line(f_x + 10 + (f_w - 20) / 8 * k, f_y + 10, f_x + 10 + (f_w - 20) / 8 * k, f_y + 10 + f_h - 20);
         }
 
         // HPバー
-        g_rgb(60000, 60000, 60000);     // グレー
+        g_rgb(60000, 60000, 60000);
         g_text_font(15, 775, "HP", 24); // 10,13,16,20,24,32,48
         g_text_font(15, 735, "MP", 24); // 10,13,16,20,24,32,48
         int hp_x = 45;
@@ -1224,19 +1223,19 @@ void *draw_thread(void *arg)
 
         hp = (hp_w - 20) * (main_player.player_HP / 100.0);
 
-        g_rgb(0, 0, 0); // グレー
+        g_rgb(0, 0, 0);
         g_fill(hp_x, hp_y, hp_w, hp_h);
 
         // 緑の部分
-        g_rgb(50000, 50000, 50000); // グレー
+        g_rgb(50000, 50000, 50000); 
         g_fill(hp_x + 5, hp_y + 5, hp_w - 10, hp_h - 10);
-        g_rgb(0, 50000, 0); // グレー
+        g_rgb(0, 50000, 0);
 
         if (hit1 == 1)
             g_rgb(60000, 0, 0);
 
         g_fill(hp_x + 10, hp_y + 10, hp, (hp_h - 20) / 2);
-        g_rgb(0, 43000, 0); // グレー
+        g_rgb(0, 43000, 0);
 
         if (hit1 == 1)
             g_rgb(53000, 0, 0);
@@ -1244,37 +1243,32 @@ void *draw_thread(void *arg)
         g_fill(hp_x + 10, hp_y + 10 + (hp_h - 20) / 2, hp, (hp_h - 20) / 2);
 
         // 目盛り
-        g_rgb(0, 0, 0); // グレー
+        g_rgb(0, 0, 0); 
         for (k = 1; k <= 7; k++)
         {
-            g_rgb(0, 0, 0); // グレー
+            g_rgb(0, 0, 0); 
             g_line(hp_x + 10 + (hp_w - 20) / 8 * k, hp_y + 10, hp_x + 10 + (hp_w - 20) / 8 * k, hp_y + 10 + hp_h - 20);
         }
 
         // MPバー
         int mp = (hp_w - 20) * (main_player.player_mp / 1000.0);
-        g_rgb(0, 0, 0); // グレー
+        g_rgb(0, 0, 0); 
         g_fill(hp_x, hp_y2, hp_w, hp_h);
 
-        g_rgb(50000, 50000, 50000); // グレー
+        g_rgb(50000, 50000, 50000); 
         g_fill(hp_x + 5, hp_y2 + 5, hp_w - 10, hp_h - 10);
 
-        g_rgb(50000, 0, 50000); // グレー
+        g_rgb(50000, 0, 50000); 
         g_fill(hp_x + 10, hp_y2 + 10, mp, (hp_h - 20) / 2);
-        g_rgb(43000, 0, 43000); // グレー
+        g_rgb(43000, 0, 43000); 
         g_fill(hp_x + 10, hp_y2 + 10 + (hp_h - 20) / 2, mp, (hp_h - 20) / 2);
 
-        g_rgb(0, 0, 0); // グレー
+        g_rgb(0, 0, 0); 
         for (k = 1; k <= 7; k++)
         {
-            g_rgb(0, 0, 0); // グレー
+            g_rgb(0, 0, 0);
             g_line(hp_x + 10 + (hp_w - 20) / 8 * k, hp_y2 + 10, hp_x + 10 + (hp_w - 20) / 8 * k, hp_y2 + 10 + hp_h - 20);
         }
-
-        // 敵の攻撃
-        g_rgb(60000, 0, 0);
-        // g_fill_quad(390,380,410,380,1600*sin(0.1*see)+500,1600*sin(0.1*see),1600*sin(0.1*see),1600*sin(0.1*see));
-        // g_fill_quad(390,380,410,380,1600*cos(0.1*see)+500,1600*cos(0.1*see),1600*sin(0.1*see),1600*sin(0.1*see));
 
         // 敵の攻撃（八の字軌道を線で描く）
 
@@ -1501,9 +1495,9 @@ void *timer_thread(void *arg)
 void show_score_screen()
 {
     g_clear();
-    g_rgb(0, 20000, 30000); // グレー
+    g_rgb(0, 20000, 30000);
     g_fill(0, 0, 800, 800);
-    g_rgb(0, 0, 0); // グレー
+    g_rgb(0, 0, 0);
     sprintf(score_str, "Final Score: %d", main_player.player_score);
     g_text_font(300, 400, score_str, 24); // 10,13,16,20,24,32,48
     text(400, 600, "Press ctrl+c");
@@ -1519,12 +1513,11 @@ void show_start_screen()
 {
     g_clear();
     draw_ximage(disp, get_draw_target(), gc, img_back3, 400, 200);
-    g_rgb(0, 20000, 30000); // グレー
+    g_rgb(0, 20000, 30000);
     g_fill(0, 400, 800, 400);
 
     // --- 床線描画（擬似3D床） ---
-    // g_rgb(45535, 45535, 45535); // グレー
-    g_rgb(0, 30000, 30000); // グレー
+    g_rgb(0, 30000, 30000);
 
     int z;
     for (z = 0; z < 800; z += 30) // ← 線の間隔を広く（20ピクセル単位）//20が感覚
@@ -1620,7 +1613,7 @@ void show_start_screen()
             // かげ
             float s_px = 400.0f + (x - 400.0f) * scale;
             float s_py = 400.0f + (800.0f - 400.0f) * scale;
-            g_rgb(0, 18000, 28000); // グレー
+            g_rgb(0, 18000, 28000);
             g_fill_arc((int)(s_px - size / 2), (int)(s_py - (size / 2) / 2), size, size / 2, 0, 360 * 64);
 
             //--- 擬似3D変換おわり ---
@@ -1640,16 +1633,15 @@ void show_start_screen()
     g_rgb(30000, 30000, 30000);
     g_fill(main_player.player_x - main_player.player_shield_width / 2 + 5, main_player.player_y - original_player_shield_height / 2 + 5, 25, 25);
     g_fill(main_player.player_x + main_player.player_shield_width / 2 - 5 - 25, main_player.player_y - original_player_shield_height / 2 + 5, 25, 25);
-    g_rgb(60000, 30000, 0); // グレー
+    g_rgb(60000, 30000, 0); 
     g_fill(main_player.player_x - main_player.player_shield_width / 2 + 10, main_player.player_y - original_player_shield_height / 2 + 3 + 10, 15, 10);
     g_fill(main_player.player_x + main_player.player_shield_width / 2 - 10 - 15, main_player.player_y - original_player_shield_height / 2 + 3 + 10, 15, 10);
     // プレイヤーかげ
-    g_rgb(0, 18000, 28000); // グレー
+    g_rgb(0, 18000, 28000);
     g_fill(main_player.player_x - main_player.player_shield_width / 2, 700 - original_player_shield_height / 2, main_player.player_shield_width, original_player_shield_height);
     // UI
 
     // score
-    //  score
     g_rgb(0, 0, 0);
     g_fill(600 - 560, 720 - 700, 150, 50);
     g_rgb(60000, 60000, 60000);
@@ -1658,7 +1650,7 @@ void show_start_screen()
     g_text_font(625 - 560, 755 - 700, score_str, 24); // 10,13,16,20,24,32,48
 
     // 燃料バー
-    g_rgb(60000, 60000, 60000);                  // グレー
+    g_rgb(60000, 60000, 60000);
     g_text_font(12 + 400, 58 + 696, "FUEL", 24); // 10,13,16,20,24,32,48
     int f_x = 65 + 400;
     int f_y = 20 + 696;
@@ -1667,26 +1659,26 @@ void show_start_screen()
 
     int fuel = (f_w - 20) * ((float)game_time / (float)game_time);
 
-    g_rgb(0, 0, 0); // グレー
+    g_rgb(0, 0, 0); 
     g_fill(f_x, f_y, f_w, f_h);
 
-    g_rgb(50000, 50000, 50000); // グレー
+    g_rgb(50000, 50000, 50000);
     g_fill(f_x + 5, f_y + 5, f_w - 10, f_h - 10);
-    g_rgb(60000, 30000, 0); // グレー
+    g_rgb(60000, 30000, 0);
     g_fill(f_x + 10, f_y + 10, fuel, (f_h - 20) / 2);
-    g_rgb(53000, 23000, 0); // グレー
+    g_rgb(53000, 23000, 0);
     g_fill(f_x + 10, f_y + 10 + (f_h - 20) / 2, fuel, (f_h - 20) / 2);
 
-    g_rgb(0, 0, 0); // グレー
+    g_rgb(0, 0, 0);
     int k;
     for (k = 1; k <= 7; k++)
     {
-        g_rgb(0, 0, 0); // グレー
+        g_rgb(0, 0, 0);
         g_line(f_x + 10 + (f_w - 20) / 8 * k, f_y + 10, f_x + 10 + (f_w - 20) / 8 * k, f_y + 10 + f_h - 20);
     }
 
     // HPバー
-    g_rgb(60000, 60000, 60000);     // グレー
+    g_rgb(60000, 60000, 60000);
     g_text_font(15, 775, "HP", 24); // 10,13,16,20,24,32,48
     g_text_font(15, 735, "MP", 24); // 10,13,16,20,24,32,48
     int hp_x = 45;
@@ -1697,41 +1689,40 @@ void show_start_screen()
 
     int hp = (hp_w - 20) * (main_player.player_HP / 100.0);
 
-    g_rgb(0, 0, 0); // グレー
+    g_rgb(0, 0, 0);
     g_fill(hp_x, hp_y, hp_w, hp_h);
 
-    g_rgb(50000, 50000, 50000); // グレー
+    g_rgb(50000, 50000, 50000);
     g_fill(hp_x + 5, hp_y + 5, hp_w - 10, hp_h - 10);
-    g_rgb(0, 50000, 0); // グレー
+    g_rgb(0, 50000, 0);
     g_fill(hp_x + 10, hp_y + 10, hp, (hp_h - 20) / 2);
-    g_rgb(0, 43000, 0); // グレー
+    g_rgb(0, 43000, 0);
     g_fill(hp_x + 10, hp_y + 10 + (hp_h - 20) / 2, hp, (hp_h - 20) / 2);
 
-    g_rgb(0, 0, 0); // グレー
+    g_rgb(0, 0, 0);
     for (k = 1; k <= 7; k++)
     {
-        g_rgb(0, 0, 0); // グレー
+        g_rgb(0, 0, 0);
         g_line(hp_x + 10 + (hp_w - 20) / 8 * k, hp_y + 10, hp_x + 10 + (hp_w - 20) / 8 * k, hp_y + 10 + hp_h - 20);
     }
 
     // MPバー
-
     int mp = (hp_w - 20) * (main_player.player_mp / 1000.0);
-    g_rgb(0, 0, 0); // グレー
+    g_rgb(0, 0, 0); 
     g_fill(hp_x, hp_y2, hp_w, hp_h);
 
-    g_rgb(50000, 50000, 50000); // グレー
+    g_rgb(50000, 50000, 50000);
     g_fill(hp_x + 5, hp_y2 + 5, hp_w - 10, hp_h - 10);
 
-    g_rgb(50000, 0, 50000); // グレー
+    g_rgb(50000, 0, 50000);
     g_fill(hp_x + 10, hp_y2 + 10, mp, (hp_h - 20) / 2);
-    g_rgb(43000, 0, 43000); // グレー
+    g_rgb(43000, 0, 43000);
     g_fill(hp_x + 10, hp_y2 + 10 + (hp_h - 20) / 2, mp, (hp_h - 20) / 2);
 
-    g_rgb(0, 0, 0); // グレー
+    g_rgb(0, 0, 0);
     for (k = 1; k <= 7; k++)
     {
-        g_rgb(0, 0, 0); // グレー
+        g_rgb(0, 0, 0);
         g_line(hp_x + 10 + (hp_w - 20) / 8 * k, hp_y2 + 10, hp_x + 10 + (hp_w - 20) / 8 * k, hp_y2 + 10 + hp_h - 20);
     }
     g_rgb(0, 0, 0);
