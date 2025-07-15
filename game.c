@@ -11,8 +11,12 @@
 #include <X11/keysym.h> // XK_Returnなどの識別定数が格納されている
 #include <X11/Xutil.h>  // XQueryKeymap 用、キーの状態取得の関数が入ってる
 
-// プロトタイプ宣言ゾーン
+// プロトタイプ宣言ゾーン----------------------------------------------------------------------------------------------------------------------
+void FatalError(char *str);
 void initwin();
+void g_set_buffering(int flag);
+void g_flush();
+Drawable get_draw_target();
 void dot(int x, int y);
 void text(int x, int y, char *str);
 void g_line(int x0, int y0, int x1, int y1);
@@ -20,26 +24,27 @@ void g_rgb(unsigned short r, unsigned short g, unsigned short b);
 void g_fill(int x0, int y0, int wid, int hei);
 void g_box(int x0, int y0, int wid, int hei);
 void g_clear();
-void g_set_buffering(int flag);
-void g_flush();
-void show_start_screen(void);
-void show_score_screen(void);
-void *timer_thread(void *arg);
+void g_fill_arc(int x, int y, int w, int h, int angle1, int angle2);
+void g_arc(int x, int y, int w, int h, int angle1, int angle2);
+const char *get_fixed_font(int point_size);
+void g_text_font(int x, int y, char *str, int point_size);
+void g_fill_quad(int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3);
+XImage *create_resized_ximage_from_array(Display *disp, Visual *vis, int depth,unsigned char image[][100][3], int img_width, int img_height,int target_width, int target_height);
+XImage *create_resized_ximage_from_array50(Display *disp, Visual *vis, int depth,unsigned char image[][50][3], int img_width, int img_height,int target_width, int target_height);
+void draw_ximage(Display *disp, Drawable target, GC gc, XImage *img, int center_x, int center_y);
+
+void draw_ramiel_yaxis(int cx, int cy, int frame);
 void *draw_thread(void *arg);
 void *logic(void *arg);
+void *timer_thread(void *arg);
+void show_score_screen(void);
+void show_start_screen(void);
 void *restore_bar(void *arg);
 void *speedup_bar(void *arg);
 void *hit_hit(void *arg);
 void *hit_hit_hit(void *arg);
 void *dd(void *arg);
-void draw_ximage(Display *disp, Drawable target, GC gc, XImage *img, int center_x, int center_y);
-XImage *create_resized_ximage_from_array(Display *disp, Visual *vis, int depth,
-                                         unsigned char image[][100][3], int img_width, int img_height,
-                                         int target_width, int target_height);
-void g_text_font(int x, int y, char *str, int point_size);
-const char *get_fixed_font(int point_size);
-
-// プロトタイプ宣言ゾーン
+// プロトタイプ宣言ゾーン----------------------------------------------------------------------------------------------------------------------
 
 // dispはどのXサーバに接続しているかを明示する
 // winはそのXサーバの中で、数あるウインドウの中で」どのウインドウに書くかを明示する
@@ -64,7 +69,7 @@ int height = DEFAULT_HEIGHT;
 
 // 以下関数定義
 
-void FatalError(char *str) //?
+void FatalError(char *str)
 
 {
     if (fp != NULL)
@@ -994,11 +999,11 @@ void *draw_thread(void *arg)
         g_rgb(50000, 50000, 50000);
         g_fill(ehp_x + 2, ehp_y + 2, ehp_w - 4, ehp_h - 4);
 
-        //立体感のため、上半分と下半分で色を変える
-        //上のいろ
+        // 立体感のため、上半分と下半分で色を変える
+        // 上のいろ
         g_rgb(60000, 0, 0);
         g_fill(ehp_x + 4, ehp_y + 4, eehp, (ehp_h - 8) / 2.0);
-        //下の色
+        // 下の色
         g_rgb(53000, 0, 0);
         g_fill(ehp_x + 4, ehp_y + 4 + (ehp_h - 8) / 2.0, eehp, (ehp_h - 8) / 2.0);
 
@@ -1043,10 +1048,10 @@ void *draw_thread(void *arg)
             float dx = xa - 400.0f;
             g_line(400, 400, xa, 800); // 中心から放射状に（縦線風）
         }
-        //大量の線を書くと重くなるので、水平線近くはベタ塗り
+        // 大量の線を書くと重くなるので、水平線近くはベタ塗り
         g_fill(0, 400, 300, 10);
         g_fill(500, 400, 300, 10);
-        g_line(0, 400, 800, 400);//水平線
+        g_line(0, 400, 800, 400); // 水平線
 
         // scoreログ
         sprintf(score_str, "Score: %d", main_player.player_score);
@@ -1061,7 +1066,7 @@ void *draw_thread(void *arg)
         }
         char timer_str[20];
         sprintf(timer_str, "Time: %d", remaining_time);
-        text(80, 10, timer_str); 
+        text(80, 10, timer_str);
 
         // 火球描画
         int i;
@@ -1777,6 +1782,7 @@ void *speedup_bar(void *arg)
 }
 
 // hitスレッド
+// 敵に弾が当たると呼び出され、敵が赤くなるフラグが立つ、敵のHPが減る
 void *hit_hit(void *arg)
 {
     hit = 1;
@@ -1795,6 +1801,7 @@ void *hit_hit(void *arg)
 }
 
 // hitスレッド
+// 球を打ち損ねると呼び出され、敵が赤くなるフラグが立つ
 void *hit_hit_hit(void *arg)
 {
     hit1 = 1;
@@ -1810,9 +1817,11 @@ void *hit_hit_hit(void *arg)
     return NULL;
 }
 
+// 敵の体力が一定割合削られると呼び出され、ビームフラグを立てる
 void *dd(void *arg)
 {
     d = 1;
+    // ４秒間のビーム
     sleep(4);
     main_player.player_HP -= 10;
     if (main_player.player_HP <= 0)
