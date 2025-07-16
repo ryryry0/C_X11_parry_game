@@ -1274,7 +1274,6 @@ void *draw_thread(void *arg)
         }
 
         // 敵の攻撃（八の字軌道を線で描く）
-
         if (d == 1)
         {
             see2++;
