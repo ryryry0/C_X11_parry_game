@@ -1,3 +1,10 @@
+
+//ステラ・パリィ（擬似3Dシューティングゲーム）
+//C言語をXlibのみ、他に特別なライブラリは使っていません
+//上部分は自作Xlibで解説を丁寧につけました
+//下部分がユーザー関数と、メイン関数
+//マルチスレッド、Xkeysystem、Ximageなどを使用
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h> // ← exit関数のために必要
@@ -29,8 +36,8 @@ void g_arc(int x, int y, int w, int h, int angle1, int angle2);
 const char *get_fixed_font(int point_size);
 void g_text_font(int x, int y, char *str, int point_size);
 void g_fill_quad(int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3);
-XImage *create_resized_ximage_from_array(Display *disp, Visual *vis, int depth,unsigned char image[][100][3], int img_width, int img_height,int target_width, int target_height);
-XImage *create_resized_ximage_from_array50(Display *disp, Visual *vis, int depth,unsigned char image[][50][3], int img_width, int img_height,int target_width, int target_height);
+XImage *create_resized_ximage_from_array(Display *disp, Visual *vis, int depth, unsigned char image[][100][3], int img_width, int img_height, int target_width, int target_height);
+XImage *create_resized_ximage_from_array50(Display *disp, Visual *vis, int depth, unsigned char image[][50][3], int img_width, int img_height, int target_width, int target_height);
 void draw_ximage(Display *disp, Drawable target, GC gc, XImage *img, int center_x, int center_y);
 
 void draw_ramiel_yaxis(int cx, int cy, int frame);
@@ -932,6 +939,7 @@ void *draw_thread(void *arg)
 
         g_clear();
         draw_ximage(disp, get_draw_target(), gc, img_back3, 400, 200);
+
         g_rgb(0, 20000, 30000);
         g_fill(0, 400, 800, 400);
 
@@ -947,11 +955,17 @@ void *draw_thread(void *arg)
 
         // 大きくなりすぎないように、指数関数的に増加させていく
         if (big <= 1000)
+        {
             big *= 1.003;
+        }
         if (big2 <= 1000 && big >= 1000)
+        {
             big2 *= 1.003;
+        }
         if (big3 <= 1000 && big2 >= 1000 && big >= 1000)
+        {
             big3 *= 1.01;
+        }
 
         // 楕円同士被らないように制御
         // 通常背景ー黒ー白ー通常背景の順に変わっていく
@@ -961,6 +975,7 @@ void *draw_thread(void *arg)
         {
             g_rgb(0, 0, 0);
             g_fill_arc((int)(400 - t * r / 2), (int)(400 - tt * r / 2), t * r, tt * r, 0, 180 * 64);
+
             g_rgb(10000, 10000, 10000);
             g_fill_arc((int)(400 - t * r / 2), (int)(400 - tt * r / 2), t * r, tt * r, 0, -180 * 64);
         }
@@ -968,6 +983,7 @@ void *draw_thread(void *arg)
         {
             g_rgb(60000, 60000, 60000);
             g_fill_arc((int)(400 - t * r2 / 2), (int)(400 + -tt * r2 / 2), t * r2, tt * r2, 0, 180 * 64);
+
             g_rgb(20000, 20000, 20000);
             g_fill_arc((int)(400 - t * r2 / 2), (int)(400 + -tt * r2 / 2), t * r2, tt * r2, 0, -180 * 64);
         }
@@ -975,6 +991,7 @@ void *draw_thread(void *arg)
         {
             g_rgb(60000, 60000, 60000);
             g_fill_arc((int)(400 - t * r3 / 2), (int)(400 + -tt * r3 / 2), t * r3, tt * r3, 0, 180 * 64);
+
             g_rgb(20000, 20000, 20000);
             g_fill_arc((int)(400 - t * r3 / 2), (int)(400 + -tt * r3 / 2), t * r3, tt * r3, 0, -180 * 64);
         }
@@ -1039,7 +1056,9 @@ void *draw_thread(void *arg)
 
         bg_floor_scroll += 4.0f; // ← 手前に進む速度
         if (bg_floor_scroll >= 800.0f)
+        {
             bg_floor_scroll -= 800.0f;
+        }
 
         // 縦線（消失点 = 画面中心に収束）
         int xa;
@@ -1142,6 +1161,7 @@ void *draw_thread(void *arg)
             }
         }
         // プレイヤー描画
+        //機体本体
         g_rgb(50000, 50000, 50000);
         if (main_player.player_y >= 2 * y_max / 3)
         {
@@ -1153,15 +1173,21 @@ void *draw_thread(void *arg)
             g_fill(main_player.player_x - main_player.player_shield_width / 4, main_player.player_y - original_player_shield_height / 2 - 10, main_player.player_shield_width / 2, original_player_shield_height);
         }
         g_fill(main_player.player_x - main_player.player_shield_width / 2, main_player.player_y - original_player_shield_height / 2 - 5, main_player.player_shield_width, original_player_shield_height);
+        
         g_rgb(40000, 40000, 40000);
         g_fill(main_player.player_x - main_player.player_shield_width / 2, main_player.player_y - original_player_shield_height / 2, main_player.player_shield_width, original_player_shield_height);
 
+        //機体の陰のところ
         g_rgb(30000, 30000, 30000);
         g_fill(main_player.player_x - main_player.player_shield_width / 2 + 5, main_player.player_y - original_player_shield_height / 2 + 5, 25, 25);
         g_fill(main_player.player_x + main_player.player_shield_width / 2 - 5 - 25, main_player.player_y - original_player_shield_height / 2 + 5, 25, 25);
+
+        //エンジン部分、燃料の色が見えるところ
         g_rgb(60000, 30000, 0);
         g_fill(main_player.player_x - main_player.player_shield_width / 2 + 10, main_player.player_y - original_player_shield_height / 2 + 3 + 10, 15, 10);
         g_fill(main_player.player_x + main_player.player_shield_width / 2 - 10 - 15, main_player.player_y - original_player_shield_height / 2 + 3 + 10, 15, 10);
+
+        //modeがわかりやすいように
         if (main_player.wide_mode == 1)
         {
             g_rgb(65535, 0, 0); // 赤
@@ -1172,22 +1198,25 @@ void *draw_thread(void *arg)
             g_rgb(0, 0, 65535); // 青色
             g_fill(main_player.player_x - main_player.player_shield_width / 4, main_player.player_y - original_player_shield_height / 4, main_player.player_shield_width / 2, original_player_shield_height / 2);
         }
+
         // プレイヤーかげ
+        // z=0にするだけ、よい一手
         g_rgb(0, 18000, 28000);
         g_fill(main_player.player_x - main_player.player_shield_width / 2, 700 - original_player_shield_height / 2, main_player.player_shield_width, original_player_shield_height);
 
-        // UI
+        // UI--------------------------------------------------------------------------------------------------------------------
 
         // score
-        //  score
+        //  score log
         g_rgb(0, 0, 0);
         g_fill(600 - 560, 720 - 700, 150, 50);
+
         g_rgb(60000, 60000, 60000);
         g_fill(600 + 5 - 560, 720 + 5 - 700, 150 - 10, 50 - 10);
         sprintf(score_str, "Score: %d", main_player.player_score);
         g_text_font(625 - 560, 755 - 700, score_str, 24); // 10,13,16,20,24,32,48
 
-        // 燃料バー
+        // 燃料バー----------------------------------------------------------------------------------------------------------------
         g_rgb(60000, 60000, 60000);
         g_text_font(12 + 400, 58 + 696, "FUEL", 24); // 10,13,16,20,24,32,48
         int f_x = 65 + 400;
@@ -1201,8 +1230,10 @@ void *draw_thread(void *arg)
 
         g_rgb(50000, 50000, 50000);
         g_fill(f_x + 5, f_y + 5, f_w - 10, f_h - 10);
+
         g_rgb(60000, 30000, 0);
         g_fill(f_x + 10, f_y + 10, fuel, (f_h - 20) / 2);
+
         g_rgb(53000, 23000, 0);
         g_fill(f_x + 10, f_y + 10 + (f_h - 20) / 2, fuel, (f_h - 20) / 2);
 
@@ -1213,8 +1244,9 @@ void *draw_thread(void *arg)
             g_rgb(0, 0, 0);
             g_line(f_x + 10 + (f_w - 20) / 8 * k, f_y + 10, f_x + 10 + (f_w - 20) / 8 * k, f_y + 10 + f_h - 20);
         }
+        //------------------------------------------------------------------------------------------------------------------------
 
-        // HPバー
+        // HPバー------------------------------------------------------------------------------------------------------------------
         g_rgb(60000, 60000, 60000);
         g_text_font(15, 775, "HP", 24); // 10,13,16,20,24,32,48
         g_text_font(15, 735, "MP", 24); // 10,13,16,20,24,32,48
@@ -1235,13 +1267,17 @@ void *draw_thread(void *arg)
         g_rgb(0, 50000, 0);
 
         if (hit1 == 1)
+        {
             g_rgb(60000, 0, 0);
+        }
 
         g_fill(hp_x + 10, hp_y + 10, hp, (hp_h - 20) / 2);
         g_rgb(0, 43000, 0);
 
         if (hit1 == 1)
+        {
             g_rgb(53000, 0, 0);
+        }
 
         g_fill(hp_x + 10, hp_y + 10 + (hp_h - 20) / 2, hp, (hp_h - 20) / 2);
 
@@ -1252,28 +1288,37 @@ void *draw_thread(void *arg)
             g_rgb(0, 0, 0);
             g_line(hp_x + 10 + (hp_w - 20) / 8 * k, hp_y + 10, hp_x + 10 + (hp_w - 20) / 8 * k, hp_y + 10 + hp_h - 20);
         }
+        //--------------------------------------------------------------------------------------------------------------------------
 
-        // MPバー
+        // MPバー----------------------------------------------------------------------------------------------------------
         int mp = (hp_w - 20) * (main_player.player_mp / 1000.0);
+        //大外
         g_rgb(0, 0, 0);
         g_fill(hp_x, hp_y2, hp_w, hp_h);
 
+        //一個内側
         g_rgb(50000, 50000, 50000);
         g_fill(hp_x + 5, hp_y2 + 5, hp_w - 10, hp_h - 10);
 
+        //色つき可変長バー上下
         g_rgb(50000, 0, 50000);
         g_fill(hp_x + 10, hp_y2 + 10, mp, (hp_h - 20) / 2);
+
         g_rgb(43000, 0, 43000);
         g_fill(hp_x + 10, hp_y2 + 10 + (hp_h - 20) / 2, mp, (hp_h - 20) / 2);
 
+        //黒いせん
         g_rgb(0, 0, 0);
         for (k = 1; k <= 7; k++)
         {
             g_rgb(0, 0, 0);
             g_line(hp_x + 10 + (hp_w - 20) / 8 * k, hp_y2 + 10, hp_x + 10 + (hp_w - 20) / 8 * k, hp_y2 + 10 + hp_h - 20);
         }
+        //-----------------------------------------------------------------------------------------------------------------
 
-        // 敵の攻撃（八の字軌道を線で描く）
+        //-----------------------------------------------------------------------------------------------------------------
+
+        // 敵の攻撃（八の字軌道を線で描く）-------------------------------------------------------------------------------------
         if (d == 1)
         {
             see2++;
@@ -1288,20 +1333,25 @@ void *draw_thread(void *arg)
             int x2 = (int)(A * sin(2 * t1)) + center_x;
             int y2 = (int)(B * sin(t1 + M_PI / 2)) + center_y;
 
+            //内部を白くすることでビーム感を出す
             g_rgb(50000, 20000, 50000);                           // 赤い線
             g_fill_quad(390, 380, 410, 380, x2 + ww, y2, x2, y2); // 前の点と現在の点を結ぶ
             g_fill_arc(x2 + ww / 2 - ww / 2, y2 - 200 / 2, ww, 200, 0, 360 * 64);
+
             g_rgb(50000, 30000, 50000);                                       // 赤い線
             g_fill_quad(395, 380, 405, 380, x2 + ww - 150, y2, x2 + 100, y2); // 前の点と現在の点を結ぶ
             g_fill_arc(x2 + ww / 2 - (ww - 100) / 2, y2 - 150 / 2, ww - 100, 150, 0, 360 * 64);
+
             g_rgb(50000, 40000, 50000);                                       // 赤い線
             g_fill_quad(398, 380, 402, 380, x2 + ww - 250, y2, x2 + 200, y2); // 前の点と現在の点を結ぶ
             g_fill_arc(x2 + ww / 2 - (ww - 200) / 2, y2 - 100 / 2, ww - 200, 100, 0, 360 * 64);
+
             g_rgb(60000, 50000, 60000);                                       // 赤い線
             g_fill_quad(399, 380, 401, 380, x2 + ww - 350, y2, x2 + 300, y2); // 前の点と現在の点を結ぶ
             g_fill_arc(x2 + ww / 2 - (ww - 200) / 2, y2 - 100 / 2, ww - 200, 100, 0, 360 * 64);
             // g_fill(x2,y2-200/2,500,200);
         }
+        //-----------------------------------------------------------------------------------------------------------------
 
         // バッファの内容を画面に送る（＝フレーム更新）
         g_flush();
@@ -1313,10 +1363,13 @@ void *draw_thread(void *arg)
     if (game_over == 1)
     {
         g_clear();
+
         g_rgb(0, 0, 0);
         g_fill(0, 0, 800, 800);
+
         g_rgb(65535, 0, 0);
         text(400, 300, "GAME OVER");
+
         g_rgb(30000, 30000, 30000);
         text(400, 360, "スコア画面へ...");
         g_flush();
@@ -1358,7 +1411,9 @@ void *logic(void *arg)
         // 速度を更新（加速度分）
         balls[j].ball_speed += accel * dt;
         if (balls[j].ball_speed > 1500.0f)
+        {
             balls[j].ball_speed = 1500.0f;
+        }
 
         float depth_factor = 0.3f + 0.8f * ((float)balls[j].ball_z / y_max); // 0.2〜1.0倍
         float dy = balls[j].ball_speed * depth_factor * dt;
@@ -1373,6 +1428,7 @@ void *logic(void *arg)
         }
 
         // 当たり判定
+        //簡単に当たり判定を実装
         float r = 11.0f;
 
         if (balls[j].cooldown_ms == 0 &&
@@ -1393,6 +1449,7 @@ void *logic(void *arg)
             balls[j].color_flag = 10; // 紫色
             main_player.player_score++;
             balls[j].ball_speed *= 5;
+            //判定がなんじゅうにも加算されないように
             balls[j].cooldown_ms = 1000; // クールダウンセット
             main_player.player_mp += 80;
             if (main_player.player_mp >= 1000)
@@ -1415,6 +1472,7 @@ void *logic(void *arg)
                 pthread_mutex_unlock(&bar_mutex);
             }
 
+            //HP回復
             if (original_color == 2)
             {
                 main_player.player_HP += 12;
@@ -1496,8 +1554,10 @@ void *timer_thread(void *arg)
 void show_score_screen()
 {
     g_clear();
+
     g_rgb(0, 20000, 30000);
     g_fill(0, 0, 800, 800);
+
     g_rgb(0, 0, 0);
     sprintf(score_str, "Final Score: %d", main_player.player_score);
     g_text_font(300, 400, score_str, 24); // 10,13,16,20,24,32,48
@@ -1505,7 +1565,7 @@ void show_score_screen()
 
     g_flush(); // 忘れずに画面更新！
 
-    sleep(1000); // ← ここで5秒間待機
+    sleep(1000); // ← ここで待機
 
     exit(0);
 }
@@ -1514,9 +1574,11 @@ void show_start_screen()
 {
     g_clear();
     draw_ximage(disp, get_draw_target(), gc, img_back3, 400, 200);
+
     g_rgb(0, 20000, 30000);
     g_fill(0, 400, 800, 400);
 
+    //drawとほぼ同じ、タイム関係だけ抜いた---------------------------------------------------------------------------
     // --- 床線描画（擬似3D床） ---
     g_rgb(0, 30000, 30000);
 
@@ -1547,7 +1609,7 @@ void show_start_screen()
 
     g_line(0, 400, 800, 400);
 
-    // 火球描画
+    // 球描画
     int i;
     for (i = 0; i < NUM_BALL; i++)
     {
@@ -1581,9 +1643,13 @@ void show_start_screen()
             float y = balls[i].ball_y;
             float z = x_max - balls[i].ball_z;
             if (z < 0)
+            {
                 z = 0;
+            }
             if (z > 800)
+            {
                 z = 800;
+            }
 
             float scale = (800.0f - z) / 800.0f;
             float px = 400.0f + (x - 400.0f) * scale;
@@ -1614,6 +1680,7 @@ void show_start_screen()
             // かげ
             float s_px = 400.0f + (x - 400.0f) * scale;
             float s_py = 400.0f + (800.0f - 400.0f) * scale;
+
             g_rgb(0, 18000, 28000);
             g_fill_arc((int)(s_px - size / 2), (int)(s_py - (size / 2) / 2), size, size / 2, 0, 360 * 64);
 
@@ -1624,16 +1691,22 @@ void show_start_screen()
     // プレイヤー描画
     g_rgb(50000, 50000, 50000);
     if (main_player.player_y >= 2 * y_max / 3)
+    {
         g_fill(main_player.player_x - main_player.player_shield_width / 6, main_player.player_y - original_player_shield_height / 2 - 13, main_player.player_shield_width / 3, original_player_shield_height);
+    }
     if (main_player.player_y >= y_max / 3)
+    {
         g_fill(main_player.player_x - main_player.player_shield_width / 4, main_player.player_y - original_player_shield_height / 2 - 10, main_player.player_shield_width / 2, original_player_shield_height);
+    }
     g_fill(main_player.player_x - main_player.player_shield_width / 2, main_player.player_y - original_player_shield_height / 2 - 5, main_player.player_shield_width, original_player_shield_height);
+
     g_rgb(40000, 40000, 40000);
     g_fill(main_player.player_x - main_player.player_shield_width / 2, main_player.player_y - original_player_shield_height / 2, main_player.player_shield_width, original_player_shield_height);
 
     g_rgb(30000, 30000, 30000);
     g_fill(main_player.player_x - main_player.player_shield_width / 2 + 5, main_player.player_y - original_player_shield_height / 2 + 5, 25, 25);
     g_fill(main_player.player_x + main_player.player_shield_width / 2 - 5 - 25, main_player.player_y - original_player_shield_height / 2 + 5, 25, 25);
+
     g_rgb(60000, 30000, 0);
     g_fill(main_player.player_x - main_player.player_shield_width / 2 + 10, main_player.player_y - original_player_shield_height / 2 + 3 + 10, 15, 10);
     g_fill(main_player.player_x + main_player.player_shield_width / 2 - 10 - 15, main_player.player_y - original_player_shield_height / 2 + 3 + 10, 15, 10);
@@ -1645,6 +1718,7 @@ void show_start_screen()
     // score
     g_rgb(0, 0, 0);
     g_fill(600 - 560, 720 - 700, 150, 50);
+
     g_rgb(60000, 60000, 60000);
     g_fill(600 + 5 - 560, 720 + 5 - 700, 150 - 10, 50 - 10);
     sprintf(score_str, "Score: %d", main_player.player_score);
@@ -1665,8 +1739,10 @@ void show_start_screen()
 
     g_rgb(50000, 50000, 50000);
     g_fill(f_x + 5, f_y + 5, f_w - 10, f_h - 10);
+
     g_rgb(60000, 30000, 0);
     g_fill(f_x + 10, f_y + 10, fuel, (f_h - 20) / 2);
+
     g_rgb(53000, 23000, 0);
     g_fill(f_x + 10, f_y + 10 + (f_h - 20) / 2, fuel, (f_h - 20) / 2);
 
@@ -1695,8 +1771,10 @@ void show_start_screen()
 
     g_rgb(50000, 50000, 50000);
     g_fill(hp_x + 5, hp_y + 5, hp_w - 10, hp_h - 10);
+
     g_rgb(0, 50000, 0);
     g_fill(hp_x + 10, hp_y + 10, hp, (hp_h - 20) / 2);
+
     g_rgb(0, 43000, 0);
     g_fill(hp_x + 10, hp_y + 10 + (hp_h - 20) / 2, hp, (hp_h - 20) / 2);
 
@@ -1717,6 +1795,7 @@ void show_start_screen()
 
     g_rgb(50000, 0, 50000);
     g_fill(hp_x + 10, hp_y2 + 10, mp, (hp_h - 20) / 2);
+
     g_rgb(43000, 0, 43000);
     g_fill(hp_x + 10, hp_y2 + 10 + (hp_h - 20) / 2, mp, (hp_h - 20) / 2);
 
@@ -1726,13 +1805,16 @@ void show_start_screen()
         g_rgb(0, 0, 0);
         g_line(hp_x + 10 + (hp_w - 20) / 8 * k, hp_y2 + 10, hp_x + 10 + (hp_w - 20) / 8 * k, hp_y2 + 10 + hp_h - 20);
     }
-    g_rgb(0, 0, 0);
 
+    g_rgb(0, 0, 0);
     draw_ximage(disp, get_draw_target(), gc, img_back0, 400, 300);
+
     g_rgb(0, 0, 0);
     g_fill(400 - 200 / 2 - 10, 590 - 50 / 2 - 10, 200 + 20, 50 + 20);
+
     g_rgb(6425, 14137, 18764);
     g_fill(400 - 200 / 2, 590 - 50 / 2, 200, 50);
+
     g_text_font(335, 600, "PLESS SPACE", 24); // 10,13,16,20,24
     g_flush();
 
@@ -1752,6 +1834,8 @@ void show_start_screen()
                 break;
         }
     }
+
+    //-----------------------------------------------------------------------------------------------------------------
 }
 
 // スキル効果時間測定スレッド:wide_mode
