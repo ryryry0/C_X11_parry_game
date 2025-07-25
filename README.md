@@ -39,9 +39,9 @@ ctrl+cで終了
 ## 🛠 コンパイル方法
 
 以下のコマンドでコンパイルできます：
+./game で実行
 
 ```bash
 gcc game.c -I/opt/X11/include -L/opt/X11/lib -lX11 -o game -lm
 
-./game で実行
 
